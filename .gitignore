@@ -1,0 +1,12 @@
+# Data
+dataset
+dnn_logs
+dnn_ckpt
+dcgan_logs
+dcgan_ckpt
+dcgan_images
+
+# trash
+*.DS_Store
+.idea
+*.pyc
