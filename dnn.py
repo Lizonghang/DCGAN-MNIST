@@ -23,12 +23,10 @@ def max_pool_2x2(x):
 
 class DNN(object):
 
-    def __init__(self, sess, lr, lr_decay_rate, lr_decay_step, batch_size, train_size,
-                 epoch, test_duration, activation_func, checkpoint_dir, log_dir):
+    def __init__(self, sess, lr,  batch_size, train_size, epoch, test_duration, activation_func,
+                 checkpoint_dir, log_dir):
         self.sess = sess
         self.lr = lr
-        self.decay_rate = lr_decay_rate
-        self.decay_step = lr_decay_step
         self.batch_size = batch_size
         self.train_size = train_size
         self.epoch = epoch
