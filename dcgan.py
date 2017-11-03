@@ -127,7 +127,7 @@ class DCGAN(object):
                 print("Epoch: [%2d] [%4d/%4d], d_loss: %.8f, g_loss: %.8f" %
                       (epoch, idx, batch_idxs, errD_fake + errD_real, errG))
 
-                if np.mod(counter, 1) == 0:
+                if np.mod(counter, 100) == 0:
                     sample_z = np.random.uniform(-1, 1, [64, self.z_dim]).astype(np.float32)
                     sample_labels = np.ones([self.batch_size, 1]) * np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
                     samples = self.sess.run(self.sampler_op, feed_dict={
@@ -217,12 +217,12 @@ class DCGAN(object):
 
         return self.sess.run(self.G, feed_dict={self.z: z, self.y: y})
 
-    def load_checkpoint(self, checkpoint_dir):
+    def load_checkpoint(self, saver):
         import re
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
         if ckpt:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            saver.restore(self.sess, os.path.join(self.checkpoint_dir, ckpt_name))
             counter = int(next(re.finditer("(\d+)(?!.*\d)", ckpt_name)).group(0))
             return True, counter
         else:

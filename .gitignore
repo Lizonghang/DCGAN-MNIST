@@ -6,6 +6,13 @@ dcgan_logs
 dcgan_ckpt
 dcgan_images
 
+# Tar
+*.tar
+*.zip
+
+# Log
+nohup.out
+
 # trash
 *.DS_Store
 .idea
