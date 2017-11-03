@@ -76,18 +76,8 @@ class DNN(object):
         tf.summary.scalar('loss', loss)
         return loss
 
-    def train(self, loss, global_step, batch_num):
-        lr = tf.train.exponential_decay(self.lr,
-                                        global_step,
-                                        self.decay_step * batch_num,
-                                        self.decay_rate,
-                                        staircase=True,
-                                        name='learning_rate')
-        tf.summary.scalar('learning_rate', lr)
-
-        optimizer = tf.train.AdamOptimizer(lr)
-        train_op = optimizer.minimize(loss, global_step)
-        return train_op
+    def train(self, loss, global_step):
+        return tf.train.AdamOptimizer(self.lr).minimize(loss, global_step)
 
     def fit(self, training_with_test=True):
         mnist = input_data.read_data_sets('dataset', one_hot=True)
@@ -104,7 +94,7 @@ class DNN(object):
 
         loss = self.calculate_loss(self.logits, self.label)
 
-        train_op = self.train(loss, global_step, max_train_batch_idx)
+        train_op = self.train(loss, global_step)
 
         correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.label, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
