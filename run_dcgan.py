@@ -60,6 +60,6 @@ def main(_):
 if __name__ == '__main__':
     """
     Fit: python run_cgan.py
-    Generate: python run_cgan.py --train False --gen_y 5
+    Generate: python run_cgan.py --train False --gen_y 0 --gen_size 64
     """
     tf.app.run()

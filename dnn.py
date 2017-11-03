@@ -132,14 +132,7 @@ class DNN(object):
                     self.keep_prob: 1.0
                 }) * 100, epoch)
 
-    def predict(self, predict_set, predict_with_label):
-        predict_data = pd.read_csv(predict_set)
-
-        if predict_with_label:
-            predict_data.drop('label', axis=1, inplace=True)
-
-        predict_data = np.array(predict_data).reshape([predict_data.shape[0], 28, 28, 1])
-
+    def predict(self, samples):
         input_ = tf.placeholder(tf.float32, [None, 28, 28, 1], name='predict_input')
 
         logits = self.inference(input_)
@@ -149,7 +142,7 @@ class DNN(object):
         if not self.load_checkpoint(saver):
             raise Exception("[ERROR] No checkpoint file found!")
 
-        logits_ = self.sess.run(logits, feed_dict={input_: predict_data, self.keep_prob: 1.0})
+        logits_ = self.sess.run(logits, feed_dict={input_: samples, self.keep_prob: 1.0})
 
         return logits_.argmax(axis=1)
 
