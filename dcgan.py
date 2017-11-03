@@ -206,16 +206,18 @@ class DCGAN(object):
 
     def generate(self, gen_y):
         saver = tf.train.Saver(tf.global_variables())
-
         if not self.load_checkpoint(saver):
             raise Exception("[ERROR] No checkpoint file found!")
 
-        z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-
-        y = np.zeros((self.batch_size, 10))
-        y[:, gen_y] = np.ones(self.batch_size)
-
-        return self.sess.run(self.G, feed_dict={self.z: z, self.y: y})
+        sample_z = np.random.uniform(-1, 1, [64, self.z_dim]).astype(np.float32)
+        sample_labels = np.zeros((self.batch_size, 10))
+        sample_labels[:, gen_y] = np.ones(self.batch_size)
+        samples = self.sess.run(self.sampler_op, feed_dict={
+            self.z: sample_z,
+            self.y: sample_labels,
+        })
+        save_images(samples, image_manifold_size(samples.shape[0]), './{}/gen_samples.jpg'.format(self.images_dir))
+        return True
 
     def load_checkpoint(self, saver):
         import re

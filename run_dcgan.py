@@ -48,13 +48,8 @@ def main(_):
         if FLAGS.train:
             dcgan.train()
         else:
-            fake_samples = dcgan.generate(FLAGS.gen_y)
-            # Save as CSV file, dataset/gen_samples.csv
-            for i in range(64):
-                plt.subplot(8, 8, i+1)
-                plt.imshow(np.reshape(fake_samples[i, :], (28, 28)), cmap='gray')
-            plt.savefig(os.path.join(FLAGS.images_dir, "gen_digits.jpg"))
-            print 'Images Saved'
+            if dcgan.generate(FLAGS.gen_y):
+                print 'Images Saved'
 
 
 if __name__ == '__main__':
