@@ -48,8 +48,7 @@ def main(_):
         if FLAGS.train:
             dcgan.train()
         else:
-            if dcgan.generate(FLAGS.gen_y):
-                print 'Images Saved'
+            dcgan.generate(FLAGS.gen_y)
 
 
 if __name__ == '__main__':

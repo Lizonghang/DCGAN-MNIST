@@ -216,8 +216,10 @@ class DCGAN(object):
             self.z: sample_z,
             self.y: sample_labels,
         })
-        save_images(samples, image_manifold_size(samples.shape[0]), './{}/gen_samples.jpg'.format(self.images_dir))
-        return True
+        filepath = './{}/gen_samples.jpg'.format(self.images_dir)
+        save_images(samples, image_manifold_size(samples.shape[0]), filepath)
+        print 'Images Saved to', filepath
+        return filepath
 
     def load_checkpoint(self, saver):
         import re
