@@ -209,17 +209,14 @@ class DCGAN(object):
         if not self.load_checkpoint(saver):
             raise Exception("[ERROR] No checkpoint file found!")
 
-        sample_z = np.random.uniform(-1, 1, [64, self.z_dim]).astype(np.float32)
+        sample_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
         sample_labels = np.zeros((self.batch_size, 10))
         sample_labels[:, gen_y] = np.ones(self.batch_size)
         samples = self.sess.run(self.sampler_op, feed_dict={
             self.z: sample_z,
             self.y: sample_labels,
         })
-        filepath = './{}/gen_samples.jpg'.format(self.images_dir)
-        save_images(samples, image_manifold_size(samples.shape[0]), filepath)
-        print 'Images Saved to', filepath
-        return filepath
+        return samples
 
     def load_checkpoint(self, saver):
         import re

@@ -1,9 +1,7 @@
 from dcgan import DCGAN
+from ops import *
 import tensorflow as tf
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import os
 
 flags = tf.app.flags
@@ -18,6 +16,7 @@ flags.DEFINE_string("checkpoint_dir", "dcgan_ckpt", "Directory name to save the 
 flags.DEFINE_string("images_dir", "dcgan_images", "Directory name to save the images generated")
 flags.DEFINE_string("logs_dir", "dcgan_logs", "Directory name to save the logs")
 flags.DEFINE_boolean("train", True, "True for training, False for generating [False]")
+flags.DEFINE_integer("gen_size", 64, "Num to generate")
 flags.DEFINE_integer("gen_y", 5, "Type for generating")
 FLAGS = flags.FLAGS
 
@@ -48,7 +47,14 @@ def main(_):
         if FLAGS.train:
             dcgan.train()
         else:
-            dcgan.generate(FLAGS.gen_y)
+            counter = 1
+            for j in range(FLAGS.gen_size / FLAGS.batch_size):
+                samples = dcgan.generate(FLAGS.gen_y)
+                for i in range(samples.shape[0]):
+                    filepath = './{}/gen_samples_{}.jpg'.format(FLAGS.images_dir, counter)
+                    save_images(samples[i, :].reshape(1, 28, 28, 1), (1, 1), filepath)
+                    print 'Image gen_samples_{}.jpg saved to {}'.format(counter, FLAGS.images_dir)
+                    counter += 1
 
 
 if __name__ == '__main__':
