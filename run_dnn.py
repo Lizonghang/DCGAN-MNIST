@@ -42,8 +42,6 @@ def main(_):
     with tf.Session() as sess:
         dnn = DNN(sess,
                   FLAGS.lr,
-                  FLAGS.lr_decay_rate,
-                  FLAGS.lr_decay_step,
                   FLAGS.batch_size,
                   FLAGS.train_size,
                   FLAGS.epoch,
