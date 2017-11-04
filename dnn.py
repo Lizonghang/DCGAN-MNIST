@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 import input_data
 
@@ -121,9 +120,9 @@ class DNN(object):
                 self.input: batch_samples,
                 self.label: batch_labels,
                 self.keep_prob: 1.0
-            }), epoch)
+            }), global_step)
 
-            saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'), global_step=epoch)
+            saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'), global_step=global_step)
 
             if training_with_test and np.mod(epoch, self.test_duration) == 0:
                 print 'Accuracy = {0}% at epoch {1}'.format(self.sess.run(accuracy, feed_dict={
@@ -132,19 +131,57 @@ class DNN(object):
                     self.keep_prob: 1.0
                 }) * 100, epoch)
 
-    def predict(self, samples):
-        input_ = tf.placeholder(tf.float32, [None, 28, 28, 1], name='predict_input')
+    def load_network(self):
+        self.global_step = tf.Variable(0, trainable=False)
 
-        logits = self.inference(input_)
+        self.inputs = tf.placeholder(tf.float32, [None, 28, 28, 1], name='batch_input')
+        self.labels = tf.placeholder(tf.int32, [None, 10], name='batch_label')
 
-        saver = tf.train.Saver(tf.global_variables())
+        self.logits = self.inference(self.inputs)
 
-        if not self.load_checkpoint(saver):
+        self.loss = self.calculate_loss(self.logits, self.labels)
+
+        self.train_op = self.train(self.loss, self.global_step)
+
+        self.saver = tf.train.Saver(tf.global_variables())
+        self.writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
+        self.summary_op = tf.summary.merge_all()
+
+        if not self.load_checkpoint(self.saver):
             raise Exception("[ERROR] No checkpoint file found!")
 
-        logits_ = self.sess.run(logits, feed_dict={input_: samples, self.keep_prob: 1.0})
+    def refit(self, samples_, labels_):
+        self.sess.run(self.train_op, feed_dict={
+            self.inputs: samples_,
+            self.labels: labels_,
+            self.keep_prob: 0.7
+        })
 
+        self.writer.add_summary(self.sess.run(self.summary_op, feed_dict={
+            self.inputs: samples_,
+            self.labels: labels_,
+            self.keep_prob: 1.0
+        }), self.sess.run(self.global_step))
+
+        self.saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'),
+                        global_step=self.sess.run(self.global_step))
+
+    def predict(self, samples):
+        self.load_network()
+        logits_ = self.sess.run(self.logits, feed_dict={self.inputs: samples, self.keep_prob: 1.0})
         return logits_.argmax(axis=1)
+
+    def eval(self):
+        self.load_network()
+        correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.labels, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        mnist = input_data.read_data_sets('dataset', one_hot=True)
+        print 'Accuracy = {0}% in test set.'.format(self.sess.run(accuracy, feed_dict={
+            self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
+            self.labels: mnist.test.labels,
+            self.keep_prob: 1.0
+        }) * 100)
 
     def load_checkpoint(self, saver):
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)

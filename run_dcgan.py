@@ -51,9 +51,9 @@ def main(_):
             for j in range(FLAGS.gen_size / FLAGS.batch_size):
                 samples = dcgan.generate(FLAGS.gen_y)
                 for i in range(samples.shape[0]):
-                    filepath = './{}/gen_samples_{}.jpg'.format(FLAGS.images_dir, counter)
+                    filepath = './{}/gen_samples_{}_{}.jpg'.format(FLAGS.images_dir, FLAGS.gen_y, counter)
                     save_images(samples[i, :].reshape(1, 28, 28, 1), (1, 1), filepath)
-                    print 'Image gen_samples_{}.jpg saved to {}'.format(counter, FLAGS.images_dir)
+                    print 'Image gen_samples_{}_{}.jpg saved to {}'.format(FLAGS.gen_y, counter, FLAGS.images_dir)
                     counter += 1
 
 

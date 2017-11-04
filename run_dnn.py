@@ -15,13 +15,18 @@ flags.DEFINE_string("activation_func", "relu", "Activation function of Deep Neur
 flags.DEFINE_string("images_dir", "dcgan_images", "File to predict")
 flags.DEFINE_string("checkpoint_dir", "dnn_ckpt", "Directory to save the checkpoints")
 flags.DEFINE_string("log_dir", "dnn_logs", "Directory to save te logs")
-flags.DEFINE_boolean("train", True, "True for training, False for predicting")
+flags.DEFINE_boolean("train", False, "True for train")
+flags.DEFINE_boolean("retrain", False, "True for continue training using images in images_dir")
 flags.DEFINE_boolean("training_with_test", True, "Calculate accuracy using testset while training.")
+flags.DEFINE_boolean("predict", False, "True for predict")
 flags.DEFINE_integer("acc_y", 0, "To calculate accuraccy of generated samples which are type y")
+flags.DEFINE_boolean("eval", False, "True for eval")
 FLAGS = flags.FLAGS
 
 
 def main(_):
+    assert sum([FLAGS.train, FLAGS.predict, FLAGS.eval, FLAGS.retrain]) == 1
+
     if not os.path.exists(FLAGS.checkpoint_dir):
         os.makedirs(FLAGS.checkpoint_dir)
     if not os.path.exists(FLAGS.log_dir):
@@ -49,9 +54,10 @@ def main(_):
                   FLAGS.checkpoint_dir,
                   FLAGS.log_dir
                   )
+
         if FLAGS.train:
             dnn.fit(training_with_test=FLAGS.training_with_test)
-        else:
+        elif FLAGS.predict:
             filename_list = [filename for filename in os.listdir(FLAGS.images_dir) if '.jpg' in filename]
 
             samples = np.zeros((len(filename_list), 28, 28, 1))
@@ -64,17 +70,40 @@ def main(_):
             predict = dnn.predict(samples)
             print 'Type {}: {}%'.format(FLAGS.acc_y, (predict == FLAGS.acc_y).sum() / float(predict.shape[0]) * 100)
 
-            err_predict = (predict != FLAGS.acc_y)
-            for i in range(len(filename_list)):
-                if err_predict[i]:
-                    print 'Error partition:', filename_list[i]
-                else:
-                    os.remove(os.path.join(FLAGS.images_dir, filename_list[i]))
+            # err_predict = (predict != FLAGS.acc_y)
+            # for i in range(len(filename_list)):
+            #     if err_predict[i]:
+            #         print 'Error partition:', filename_list[i]
+            #     else:
+            #         os.remove(os.path.join(FLAGS.images_dir, filename_list[i]))
+
+        elif FLAGS.eval:
+            dnn.eval()
+        elif FLAGS.retrain:
+            dnn.load_network()
+            filename_list = [filename for filename in os.listdir(FLAGS.images_dir) if '.jpg' in filename]
+            max_batch = len(filename_list) / FLAGS.batch_size
+            assert max_batch != 0
+            for i in range(max_batch):
+                samples = np.zeros((FLAGS.batch_size, 28, 28, 1))
+                labels = np.zeros((FLAGS.batch_size, 10))
+
+                files = filename_list[i*FLAGS.batch_size: (i+1)*FLAGS.batch_size]
+                for j in range(FLAGS.batch_size):
+                    im = Image.open(os.path.join(FLAGS.images_dir, files[j]))
+                    im_data = np.asarray(im) / 255.0
+                    samples[j, :] = np.reshape(im_data, [28, 28, 1])
+                    labels[j, int(files[j].split('_')[-2])] = 1
+                    os.remove(os.path.join(FLAGS.images_dir, files[j]))
+
+                dnn.refit(samples, labels)
 
 
 if __name__ == '__main__':
     """
-    Fit:python run_dnn.py
-    Predict:python run_dnn.py --train False --acc_y 0
+    Fit:        python run_dnn.py --train
+    Predict:    python run_dnn.py --predict --acc_y 0
+    Eval:       python run_dnn.py --eval
+    Retrain:    python run_dnn.py --retrain
     """
     tf.app.run()
