@@ -64,6 +64,13 @@ def main(_):
             predict = dnn.predict(samples)
             print 'Type {}: {}%'.format(FLAGS.acc_y, (predict == FLAGS.acc_y).sum() / float(predict.shape[0]) * 100)
 
+            err_predict = (predict != FLAGS.acc_y)
+            for i in range(len(filename_list)):
+                if err_predict[i]:
+                    print 'Error partition:', filename_list[i]
+                else:
+                    os.remove(os.path.join(FLAGS.images_dir, filename_list[i]))
+
 
 if __name__ == '__main__':
     """
