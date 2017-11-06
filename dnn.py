@@ -117,8 +117,8 @@ class DNN(object):
                 counter = self.sess.run(global_step)
                 if counter % 100 == 0:
                     writer.add_summary(self.sess.run(summary_op, feed_dict={
-                        self.input: batch_samples,
-                        self.label: batch_labels,
+                        self.input: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
+                        self.label: mnist.test.labels,
                         self.keep_prob: 1.0
                     }), counter)
 
