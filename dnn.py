@@ -95,6 +95,7 @@ class DNN(object):
 
         correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.label, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.summary.scalar('accuracy', accuracy)
 
         self.sess.run(tf.global_variables_initializer())
 
