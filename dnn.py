@@ -105,9 +105,6 @@ class DNN(object):
         saver = tf.train.Saver(tf.global_variables())
 
         for epoch in range(self.epoch):
-            batch_samples = None
-            batch_labels = None
-
             for batch_idx in xrange(max_train_batch_idx):
                 batch_samples, batch_labels = mnist.train.next_batch(self.batch_size)
                 batch_samples = np.reshape(batch_samples, [self.batch_size, 28, 28, 1])
@@ -117,11 +114,13 @@ class DNN(object):
                     self.keep_prob: 0.7
                 })
 
-            writer.add_summary(self.sess.run(summary_op, feed_dict={
-                self.input: batch_samples,
-                self.label: batch_labels,
-                self.keep_prob: 1.0
-            }), global_step)
+                counter = self.sess.run(global_step)
+                if counter % 100 == 0:
+                    writer.add_summary(self.sess.run(summary_op, feed_dict={
+                        self.input: batch_samples,
+                        self.label: batch_labels,
+                        self.keep_prob: 1.0
+                    }), counter)
 
             saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'), global_step=global_step)
 
