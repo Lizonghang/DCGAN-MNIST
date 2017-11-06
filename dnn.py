@@ -115,7 +115,7 @@ class DNN(object):
                 })
 
                 counter = self.sess.run(global_step)
-                if counter % 100 == 0:
+                if counter % 5 == 0:
                     writer.add_summary(self.sess.run(summary_op, feed_dict={
                         self.input: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
                         self.label: mnist.test.labels,
