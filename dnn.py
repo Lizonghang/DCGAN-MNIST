@@ -143,6 +143,10 @@ class DNN(object):
 
         self.train_op = self.train(self.loss, self.global_step)
 
+        correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.labels, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.summary.scalar('accuracy', accuracy)
+
         self.saver = tf.train.Saver(tf.global_variables())
         self.writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
         self.summary_op = tf.summary.merge_all()
