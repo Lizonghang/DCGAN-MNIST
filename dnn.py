@@ -167,7 +167,6 @@ class DNN(object):
                         global_step=self.sess.run(self.global_step))
 
     def predict(self, samples):
-        self.load_network()
         logits_ = self.sess.run(self.logits, feed_dict={self.inputs: samples, self.keep_prob: 1.0})
         return logits_.argmax(axis=1)
 

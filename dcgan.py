@@ -211,7 +211,7 @@ class DCGAN(object):
 
         sample_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
         sample_labels = np.zeros((self.batch_size, 10))
-        sample_labels[:, gen_y] = np.ones(self.batch_size)
+        sample_labels[range(self.batch_size), gen_y] = 1
         samples = self.sess.run(self.sampler_op, feed_dict={
             self.z: sample_z,
             self.y: sample_labels,

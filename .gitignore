@@ -5,6 +5,7 @@ dnn_ckpt
 dcgan_logs
 dcgan_ckpt
 dcgan_images
+dcgan_eval
 
 # Tar
 *.tar

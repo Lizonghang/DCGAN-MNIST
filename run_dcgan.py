@@ -2,6 +2,7 @@ from dcgan import DCGAN
 from ops import *
 import tensorflow as tf
 import numpy as np
+import random
 import os
 
 flags = tf.app.flags
@@ -17,7 +18,7 @@ flags.DEFINE_string("images_dir", "dcgan_images", "Directory name to save the im
 flags.DEFINE_string("logs_dir", "dcgan_logs", "Directory name to save the logs")
 flags.DEFINE_boolean("train", True, "True for training, False for generating [False]")
 flags.DEFINE_integer("gen_size", 64, "Num to generate")
-flags.DEFINE_integer("gen_y", 5, "Type for generating")
+flags.DEFINE_integer("gen_y", None, "Type for generating")
 FLAGS = flags.FLAGS
 
 
@@ -49,17 +50,18 @@ def main(_):
         else:
             counter = 1
             for j in range(FLAGS.gen_size / FLAGS.batch_size):
-                samples = dcgan.generate(FLAGS.gen_y)
+                gen_y = FLAGS.gen_y or [random.randint(0, 9) for _ in range(FLAGS.batch_size)]
+                samples = dcgan.generate(gen_y)
                 for i in range(samples.shape[0]):
-                    filepath = './{}/gen_samples_{}_{}.jpg'.format(FLAGS.images_dir, FLAGS.gen_y, counter)
+                    filepath = './{}/gen_samples_{}_{}.jpg'.format(FLAGS.images_dir, FLAGS.gen_y or gen_y[i], counter)
                     save_images(samples[i, :].reshape(1, 28, 28, 1), (1, 1), filepath)
-                    print 'Image gen_samples_{}_{}.jpg saved to {}'.format(FLAGS.gen_y, counter, FLAGS.images_dir)
+                    print 'Image gen_samples_{}_{}.jpg saved to {}'.format(FLAGS.gen_y or gen_y[i], counter, FLAGS.images_dir)
                     counter += 1
 
 
 if __name__ == '__main__':
     """
     Fit: python run_dcgan.py
-    Generate: python run_dcgan.py --train False --gen_y 0 --gen_size 64
+    Generate: python run_dcgan.py --train False --gen_size 64
     """
     tf.app.run()
