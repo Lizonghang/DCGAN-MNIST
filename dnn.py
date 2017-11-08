@@ -125,13 +125,13 @@ class DNN(object):
                     self.keep_prob: 0.7
                 })
 
-                counter = self.sess.run(global_step)
-                if counter % 5 == 0:
-                    writer.add_summary(self.sess.run(summary_op, feed_dict={
-                        self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
-                        self.labels: mnist.test.labels,
-                        self.keep_prob: 1.0
-                    }), counter)
+                # counter = self.sess.run(global_step)
+                # if counter % 5 == 0:
+                #     writer.add_summary(self.sess.run(summary_op, feed_dict={
+                #         self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
+                #         self.labels: mnist.test.labels,
+                #         self.keep_prob: 1.0
+                #     }), counter)
 
             saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'), global_step=global_step)
 
