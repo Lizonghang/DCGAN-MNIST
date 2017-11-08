@@ -113,11 +113,12 @@ class DNN(object):
             for batch_idx in xrange(max_train_batch_idx):
                 batch_files = filename_list[batch_idx*self.batch_size: (batch_idx+1)*self.batch_size]
                 batch_samples = np.zeros((self.batch_size, 28, 28, 1))
-                batch_labels = []
+                batch_labels = np.zeros((self.batch_size, 10))
                 for i in range(self.batch_size):
                     im_data = np.array(Image.open('dataset/train_images/'+batch_files[i]))
                     batch_samples[i, :] = im_data.reshape([28, 28, 1]) / 255.0
-                    batch_labels.append(int(batch_files[i].split('_')[-2]))
+                    batch_labels[i, int(batch_files[i].split('_')[-2])] = 1
+
                 self.sess.run(train_op, feed_dict={
                     self.inputs: batch_samples,
                     self.labels: batch_labels,
