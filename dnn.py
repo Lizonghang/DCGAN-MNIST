@@ -1,7 +1,9 @@
+from PIL import Image
 import os
 import numpy as np
 import tensorflow as tf
 import input_data
+import random
 
 
 def weight_variable(shape):
@@ -79,21 +81,23 @@ class DNN(object):
     def fit(self, training_with_test=True):
         mnist = input_data.read_data_sets('dataset', one_hot=True)
 
-        train_size = min(mnist.train.num_examples, self.train_size)
+        filename_list = [filename for filename in os.listdir('dataset/train_images') if '.jpg' in filename]
+
+        train_size = min(len(filename_list), self.train_size)
         max_train_batch_idx = train_size / self.batch_size
 
         global_step = tf.Variable(0, trainable=False)
 
-        self.input = tf.placeholder(tf.float32, [None, 28, 28, 1], name='batch_input')
-        self.label = tf.placeholder(tf.int32, [None, 10], name='batch_label')
+        self.inputs = tf.placeholder(tf.float32, [None, 28, 28, 1], name='batch_input')
+        self.labels = tf.placeholder(tf.int32, [None, 10], name='batch_label')
 
-        self.logits = self.inference(self.input)
+        self.logits = self.inference(self.inputs)
 
-        loss = self.calculate_loss(self.logits, self.label)
+        loss = self.calculate_loss(self.logits, self.labels)
 
         train_op = self.train(loss, global_step)
 
-        correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.label, 1))
+        correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.labels, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         tf.summary.scalar('accuracy', accuracy)
 
@@ -105,20 +109,26 @@ class DNN(object):
         saver = tf.train.Saver(tf.global_variables())
 
         for epoch in range(self.epoch):
+            random.shuffle(filename_list)
             for batch_idx in xrange(max_train_batch_idx):
-                batch_samples, batch_labels = mnist.train.next_batch(self.batch_size)
-                batch_samples = np.reshape(batch_samples, [self.batch_size, 28, 28, 1])
+                batch_files = filename_list[batch_idx*self.batch_size: (batch_idx+1)*self.batch_size]
+                batch_samples = np.zeros((self.batch_size, 28, 28, 1))
+                batch_labels = []
+                for i in range(self.batch_size):
+                    im_data = np.array(Image.open('dataset/train_images/'+batch_files[i]))
+                    batch_samples[i, :] = im_data.reshape([28, 28, 1]) / 255.0
+                    batch_labels.append(int(batch_files[i].split('_')[-2]))
                 self.sess.run(train_op, feed_dict={
-                    self.input: batch_samples,
-                    self.label: batch_labels,
+                    self.inputs: batch_samples,
+                    self.labels: batch_labels,
                     self.keep_prob: 0.7
                 })
 
                 counter = self.sess.run(global_step)
                 if counter % 5 == 0:
                     writer.add_summary(self.sess.run(summary_op, feed_dict={
-                        self.input: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
-                        self.label: mnist.test.labels,
+                        self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
+                        self.labels: mnist.test.labels,
                         self.keep_prob: 1.0
                     }), counter)
 
@@ -126,8 +136,8 @@ class DNN(object):
 
             if training_with_test and np.mod(epoch, self.test_duration) == 0:
                 print 'Accuracy = {0}% at epoch {1}'.format(self.sess.run(accuracy, feed_dict={
-                    self.input: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
-                    self.label: mnist.test.labels,
+                    self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
+                    self.labels: mnist.test.labels,
                     self.keep_prob: 1.0
                 }) * 100, epoch)
 
@@ -153,22 +163,6 @@ class DNN(object):
 
         if not self.load_checkpoint(self.saver):
             raise Exception("[ERROR] No checkpoint file found!")
-
-    def refit(self, samples_, labels_):
-        self.sess.run(self.train_op, feed_dict={
-            self.inputs: samples_,
-            self.labels: labels_,
-            self.keep_prob: 0.7
-        })
-
-        self.writer.add_summary(self.sess.run(self.summary_op, feed_dict={
-            self.inputs: samples_,
-            self.labels: labels_,
-            self.keep_prob: 1.0
-        }), self.sess.run(self.global_step))
-
-        self.saver.save(self.sess, os.path.join(self.checkpoint_dir, 'model.ckpt'),
-                        global_step=self.sess.run(self.global_step))
 
     def predict(self, samples):
         logits_ = self.sess.run(self.logits, feed_dict={self.inputs: samples, self.keep_prob: 1.0})

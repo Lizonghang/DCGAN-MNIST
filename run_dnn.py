@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import random
 import os
 from PIL import Image
 from dnn import DNN
@@ -111,23 +110,6 @@ def main(_):
                 a, b = filename.split('.')[0].split('_')[-2:]
                 counter = int(a) * 859 + int(b)
                 print '{}: {}'.format(counter, (predict == 5).sum() / float(predict.shape[0]))
-        elif FLAGS.retrain:
-            dnn.load_network()
-            filename_list = [filename for filename in os.listdir(FLAGS.images_dir) if '.jpg' in filename]
-            max_batch = len(filename_list) / FLAGS.batch_size
-            assert max_batch != 0
-            random.shuffle(filename_list)
-            for i in range(max_batch):
-                samples = np.zeros((FLAGS.batch_size, 28, 28, 1))
-                labels = np.zeros((FLAGS.batch_size, 10))
-                files = filename_list[i*FLAGS.batch_size: (i+1)*FLAGS.batch_size]
-                for j in range(FLAGS.batch_size):
-                    im = Image.open(os.path.join(FLAGS.images_dir, files[j]))
-                    im_data = np.asarray(im) / 255.0
-                    samples[j, :] = np.reshape(im_data, [28, 28, 1])
-                    labels[j, int(files[j].split('_')[-2])] = 1
-                    os.remove(os.path.join(FLAGS.images_dir, files[j]))
-                dnn.refit(samples, labels)
 
 
 if __name__ == '__main__':
