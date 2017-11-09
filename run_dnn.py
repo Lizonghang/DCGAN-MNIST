@@ -97,7 +97,19 @@ def main(_):
                 if FLAGS.bi_predict:
                     print 'Accuracy: {}%'.format((predict == gen_y).sum() / float(predict.shape[0]) * 100)
                 elif FLAGS.bi_filter:
-                    pass
+                    err_predict = (predict != gen_y)
+                    counter = 0
+                    for i in range(len(filename_list)):
+                        if err_predict[i] and gen_y[i] == 0:
+                            old_name = os.path.join(FLAGS.images_dir, filename_list[i])
+                            new_name = '_'.join(old_name.split('_')[:2])
+                            new_name = '_'.join([new_name, str(predict[i])])
+                            new_name = '_'.join([new_name, old_name.split('_')[-1]])
+                            os.rename(old_name, new_name)
+                            counter += 1
+                        else:
+                            os.remove(os.path.join(FLAGS.images_dir, filename_list[i]))
+                    print 'Find: {}'.format(counter)
         elif FLAGS.eval:
             dnn.eval()
         elif FLAGS.eval_G:

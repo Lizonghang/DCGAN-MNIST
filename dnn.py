@@ -1,5 +1,6 @@
 from PIL import Image
 from pandas_ml import ConfusionMatrix
+from sklearn.metrics import roc_curve, auc
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -183,7 +184,7 @@ class DNN(object):
             self.labels: mnist.test.labels,
             self.keep_prob: 1.0
         })
-        print 'Accuracy = {0}% in test set.'.format(acc*100)
+        # print 'Accuracy = {0}% in test set.'.format(acc*100)
 
         # cm = ConfusionMatrix(
         #     map(lambda one_hot: [i for i in range(10) if one_hot[i]][0], mnist.test.labels),
@@ -195,6 +196,18 @@ class DNN(object):
         )
         print cm
         cm.plot(normalized=True)
+        plt.show()
+
+        plt.figure()
+        fpr, tpr, thresholds = roc_curve(
+            map(lambda one_hot: [i/5 for i in range(10) if one_hot[i]][0], mnist.test.labels),
+            logits_.argmax(axis=1)
+        )
+        plt.plot(fpr, tpr, lw=1)
+        roc_auc = auc(fpr, tpr)
+        plt.title('ROC (AUC=%s)' % roc_auc)
+        plt.grid('on')
+        plt.axis([0, 1.0, 0, 1.0])
         plt.show()
 
     def load_checkpoint(self, saver):
