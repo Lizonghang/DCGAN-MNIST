@@ -1,5 +1,7 @@
 from PIL import Image
+from pandas_ml import ConfusionMatrix
 import os
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import input_data
@@ -175,11 +177,25 @@ class DNN(object):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
         mnist = input_data.read_data_sets('dataset', one_hot=True)
-        print 'Accuracy = {0}% in test set.'.format(self.sess.run(accuracy, feed_dict={
+
+        acc, logits_ = self.sess.run([accuracy, self.logits], feed_dict={
             self.inputs: np.reshape(mnist.test.images, [mnist.test.images.shape[0], 28, 28, 1]),
             self.labels: mnist.test.labels,
             self.keep_prob: 1.0
-        }) * 100)
+        })
+        print 'Accuracy = {0}% in test set.'.format(acc*100)
+
+        # cm = ConfusionMatrix(
+        #     map(lambda one_hot: [i for i in range(10) if one_hot[i]][0], mnist.test.labels),
+        #     logits_.argmax(axis=1)
+        # )
+        cm = ConfusionMatrix(
+            map(lambda one_hot: [i/5 for i in range(10) if one_hot[i]][0], mnist.test.labels),
+            logits_.argmax(axis=1)/5
+        )
+        print cm
+        cm.plot(normalized=True)
+        plt.show()
 
     def load_checkpoint(self, saver):
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
