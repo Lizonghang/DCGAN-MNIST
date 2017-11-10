@@ -195,20 +195,20 @@ class DNN(object):
             logits_.argmax(axis=1)/5
         )
         print cm
-        cm.plot(normalized=True)
-        plt.show()
+        # cm.plot(normalized=True)
+        # plt.show()
 
-        plt.figure()
-        fpr, tpr, thresholds = roc_curve(
-            map(lambda one_hot: [i/5 for i in range(10) if one_hot[i]][0], mnist.test.labels),
-            logits_.argmax(axis=1)
-        )
-        plt.plot(fpr, tpr, lw=1)
-        roc_auc = auc(fpr, tpr)
-        plt.title('ROC (AUC=%s)' % roc_auc)
-        plt.grid('on')
-        plt.axis([0, 1.0, 0, 1.0])
-        plt.show()
+        # plt.figure()
+        # fpr, tpr, thresholds = roc_curve(
+        #     map(lambda one_hot: [i/5 for i in range(10) if one_hot[i]][0], mnist.test.labels),
+        #     logits_.argmax(axis=1)
+        # )
+        # plt.plot(fpr, tpr, lw=1)
+        # roc_auc = auc(fpr, tpr)
+        # plt.title('ROC (AUC=%s)' % roc_auc)
+        # plt.grid('on')
+        # plt.axis([0, 1.0, 0, 1.0])
+        # plt.show()
 
     def load_checkpoint(self, saver):
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
