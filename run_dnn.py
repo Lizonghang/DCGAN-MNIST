@@ -92,15 +92,15 @@ def main(_):
                         os.remove(os.path.join(FLAGS.images_dir, filename_list[i]))
                 print 'Find: {}'.format(counter)
             else:
-                predict = np.array(predict) / 5
-                gen_y = np.array(gen_y) / 5
+                bi_predict = np.array(predict) / 5
+                bi_gen_y = np.array(gen_y) / 5
                 if FLAGS.bi_predict:
-                    print 'Accuracy: {}%'.format((predict == gen_y).sum() / float(predict.shape[0]) * 100)
+                    print 'Accuracy: {}%'.format((bi_predict == bi_gen_y).sum() / float(bi_predict.shape[0]) * 100)
                 elif FLAGS.bi_filter:
-                    err_predict = (predict != gen_y)
+                    err_predict = (bi_predict != bi_gen_y)
                     counter = 0
                     for i in range(len(filename_list)):
-                        if err_predict[i] and gen_y[i] == 0:
+                        if err_predict[i] and bi_gen_y[i] == 0:
                             old_name = os.path.join(FLAGS.images_dir, filename_list[i])
                             new_name = '_'.join(old_name.split('_')[:2])
                             new_name = '_'.join([new_name, str(predict[i])])
